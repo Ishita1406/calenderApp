@@ -3,7 +3,7 @@ import "../styles/EventForm.css";
 import axiosInstance from "../utils/axiosInstance";
 
 
-const EventForm = ({ selectedDate, onClose }) => {
+const EventForm = ({ selectedDate, onClose, onSuccess }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [time, setTime] = useState("");
@@ -29,6 +29,9 @@ const EventForm = ({ selectedDate, onClose }) => {
             setError(response.data.message);
             return;
         }
+        const newEvent = response.data.event;
+        onClose(); 
+        onSuccess(newEvent)
     } catch (error) {
         if (error.response && error.response.data && error.response.data.message) {
             setError(error.response.data.message);
@@ -38,9 +41,10 @@ const EventForm = ({ selectedDate, onClose }) => {
         }
     }
 
+    
     console.log("Event Submitted:", Object.fromEntries(eventData));
 
-    onClose(); 
+    
   };
 
   return (

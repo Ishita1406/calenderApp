@@ -19,6 +19,10 @@ const eventSchema = new mongoose.Schema({
     mediaUrl: {
         type: String,
     },
+    userId: {
+        type: String,
+        required: true,
+    }
 }, {timestamps: true});
 
 const Event = mongoose.model('Event', eventSchema);
