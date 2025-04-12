@@ -1,14 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/EventForm.css";
 import axiosInstance from "../utils/axiosInstance";
 
 
-const EventForm = ({ selectedDate, onClose, onSuccess }) => {
+const EventForm = ({ selectedDate, onClose, onSuccess, existingEvent }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [time, setTime] = useState("");
   const [mediaUrl, setMediaUrl] = useState(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (existingEvent) {
+      setTitle(existingEvent.title || "");
+      setDescription(existingEvent.description || "");
+      setTime(existingEvent.time || "");
+      setMediaUrl(existingEvent.mediaUrl || null);
+    }
+    else {
+      setTitle("");
+      setDescription("");
+      setTime("");
+      setMediaUrl(null);
+    }
+  }, [existingEvent]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +37,16 @@ const EventForm = ({ selectedDate, onClose, onSuccess }) => {
     if (mediaUrl) eventData.append("mediaUrl", mediaUrl);
 
     try {
-        const response = await axiosInstance.post('server/event/create', eventData, {
+        let response;
+        if (existingEvent) {
+          response = await axiosInstance.put(`/server/event/edit/${existingEvent._id}`, eventData, {
             headers: { "Content-Type": "multipart/form-data" },
-        });
+          });
+        } else {
+          response = await axiosInstance.post("server/event/create", eventData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        }
         if (response.data && response.data.error) {
             setError(response.data.message);
             return;
@@ -50,7 +72,7 @@ const EventForm = ({ selectedDate, onClose, onSuccess }) => {
   return (
     <div className="event-form-container">
       <form className="event-form" onSubmit={handleSubmit}>
-        <h2>Create Event for {selectedDate.toDateString()}</h2>
+      <h2>{existingEvent ? `Edit Event` : `Create Event`} for {selectedDate.toDateString()}</h2>
 
         <label>Title:</label>
         <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -65,7 +87,7 @@ const EventForm = ({ selectedDate, onClose, onSuccess }) => {
         <input type="file" accept="image/*,video/*" onChange={(e) => setMediaUrl(e.target.files[0])} />
 
         <div className="form-buttons">
-          <button type="submit">Add Event</button>
+        <button type="submit">{existingEvent ? "Update Event" : "Add Event"}</button>
           <button type="button" onClick={onClose}>Cancel</button>
         </div>
       </form>

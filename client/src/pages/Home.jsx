@@ -16,6 +16,7 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [showEventsPopup, setShowEventsPopup] = useState(false);
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState([]);
+  const [isEditing, setIsEditing] = useState(null);
 
   const fetchEvents = async () => {
     try {
@@ -103,6 +104,12 @@ const Home = () => {
       );
     }
   };
+
+  const editEvent = (event) => {
+    setIsEditing(event);
+    setShowForm(true);
+    setShowEventsPopup(false);
+  }
   
   return (
     <div className="calendar-fullscreen">
@@ -138,6 +145,7 @@ const Home = () => {
                     key={event._id} 
                     event={event} 
                     onDelete={deleteEvent}
+                    onEdit={() => editEvent(event)}
                     onEventUpdated={() => {
                       const updatedEventsForSelectedDate = events.filter(event => {
                         const eventDateStr = new Date(event.date).toISOString().split("T")[0];
@@ -166,14 +174,23 @@ const Home = () => {
         <div className="form-popup-overlay">
           <EventForm
             selectedDate={currentViewDate}
+            existingEvent={isEditing}
             onClose={() => {
               setShowForm(false);
+              setIsEditing(null);
               setShowEventsPopup(true);
               handleDateClick(currentViewDate);
             }}
             onSuccess={(newEvent) => {
               setEvents((prevEvents) => {
-                const updatedEvents = [...prevEvents, newEvent];
+                let updatedEvents;
+                if (isEditing) {
+                  updatedEvents = prevEvents.map((event) =>
+                    event._id === newEvent._id ? newEvent : event
+                  );  
+                } else {
+                  updatedEvents = [...prevEvents, newEvent];
+                }
                 setEventsForSelectedDate(updatedEvents.filter(event => {
                   const eventDateStr = new Date(event.date).toISOString().split("T")[0];
                   return eventDateStr === currentViewDate.toISOString().split("T")[0];
@@ -181,6 +198,7 @@ const Home = () => {
                 return updatedEvents;
               });
               setShowForm(false);
+              setIsEditing(null);
             }}
           />
         </div>

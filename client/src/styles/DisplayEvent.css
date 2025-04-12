@@ -41,3 +41,10 @@
     cursor: pointer;  
   }
 }
+
+.edit-button {
+  :hover {
+    color: green;
+    cursor: pointer;  
+  }
+}

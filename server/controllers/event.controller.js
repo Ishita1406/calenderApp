@@ -55,3 +55,34 @@ export const deleteEvent = async (req, res) => {
     });
   }
 }
+
+export const editEvent = async (req, res) => {
+  const eventId = req.params.id;
+  const user = req.user;
+  const { title, date, time, description, mediaUrl } = req.body;
+
+  try {
+    const event = await Event.findOne({ _id: eventId, userId: user._id });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    if (title) event.title = title;
+    if (date) event.date = date;
+    if (time) event.time = time;
+    if (description) event.description = description;
+    if (req.file?.path) {
+      event.mediaUrl = req.file.path;
+    }
+    await event.save();
+    return res.status(200).json({
+      error: false,
+      message: "Event updated successfully",
+      event,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: "Server error",
+    });
+  }
+}

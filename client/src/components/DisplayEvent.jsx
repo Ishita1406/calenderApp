@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/DisplayEvent.css";
 import { MdCreate, MdDelete } from 'react-icons/md'
 
-const DisplayEvent = ({ event, onDelete }) => {
+const DisplayEvent = ({ event, onDelete, onEdit }) => {
   return (
     <div className="event-card">
       <div className="event-details">
@@ -26,7 +26,7 @@ const DisplayEvent = ({ event, onDelete }) => {
       </div>
       <div className="event-actions">
         <button className="edit-button">
-          <MdCreate />
+          <MdCreate onClick={() => {onEdit(event)}}/>
         </button>
         <button className="delete-button">
           <MdDelete onClick={() => {onDelete(event)}}/>
