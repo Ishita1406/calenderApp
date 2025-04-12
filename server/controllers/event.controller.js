@@ -36,3 +36,22 @@ export const getAllEvents = async (req, res) => {
     });
   }
 }
+
+export const deleteEvent = async (req, res) => {
+  const eventId = req.params.id;
+  const user = req.user;
+
+  try {
+    const event = await Event.findOne({ _id: eventId, userId: user._id });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    await Event.deleteOne({ _id: eventId, userId: user._id });
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: "Server error",
+    });
+  }
+}

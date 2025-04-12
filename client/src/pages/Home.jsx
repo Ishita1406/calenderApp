@@ -77,6 +77,33 @@ const Home = () => {
     setShowForm(false);
   };
 
+  const deleteEvent = async (eventDetails) => {
+    try {
+      if (!eventDetails?._id) {
+        throw new Error("Event ID is missing");
+      }
+      const eventId = eventDetails._id;  
+      const response = await axiosInstance.delete(
+        `/server/event/delete/${eventId}`
+      );  
+      const updatedEvents = events.filter((event) => event._id !== eventId);
+      setEvents(updatedEvents);
+      if (currentViewDate) {
+        const selectedDateStr = currentViewDate.toISOString().split("T")[0];
+        const updatedEventsForDate = updatedEvents.filter((event) => {
+          const eventDateStr = new Date(event.date).toISOString().split("T")[0];
+          return eventDateStr === selectedDateStr;
+        });
+        setEventsForSelectedDate(updatedEventsForDate);
+      }
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      setError(
+        `Failed to delete event: ${error.response?.data?.message || error.message}`
+      );
+    }
+  };
+  
   return (
     <div className="calendar-fullscreen">
       <h1 className="calendar-title">My Calendar</h1>
@@ -110,6 +137,7 @@ const Home = () => {
                   <DisplayEvent 
                     key={event._id} 
                     event={event} 
+                    onDelete={deleteEvent}
                     onEventUpdated={() => {
                       const updatedEventsForSelectedDate = events.filter(event => {
                         const eventDateStr = new Date(event.date).toISOString().split("T")[0];
