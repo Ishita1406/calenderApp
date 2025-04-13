@@ -50,4 +50,28 @@
   .form-buttons button:last-child {
     background-color: #9ca3af;
   }
+
+  .error-message {
+    color: #f44336;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #ffebee;
+    border-radius: 4px;
+  }
+  
+  input[type="datetime-local"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  input[type="time"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    margin-bottom: 15px;
+  }
   

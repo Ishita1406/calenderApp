@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import EventForm from "../components/EventForm";
@@ -11,20 +11,42 @@ const Home = () => {
   const [currentViewDate, setCurrentViewDate] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [events, setEvents] = useState([]);
-  const [refresh, setRefresh] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showEventsPopup, setShowEventsPopup] = useState(false);
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState([]);
   const [isEditing, setIsEditing] = useState(null);
 
+  const getEventDateTime = (eventDate, eventTime) => {
+    const [year, month, day] = eventDate.split("-").map(Number); 
+    const [hour, minute] = eventTime.split(":").map(Number);
+  
+    const eventDateTime = new Date(year, month - 1, day, hour, minute, 0);
+  
+    console.log("Parsed Date:", eventDateTime);
+  
+    if (isNaN(eventDateTime.getTime())) {
+      console.error("Invalid event date-time with values:", { year, month, day, hour, minute });
+      return null;
+    }
+  
+    return eventDateTime;
+  };
+  
   const fetchEvents = async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get("/server/event/get");
       
       if (response.data && response.data.events && Array.isArray(response.data.events)) {
-        setEvents(response.data.events);
+        const eventsWithCorrectDateTime = response.data.events.map(event => {
+          return {
+            ...event,
+            dateTime: getEventDateTime(event.date, event.time) 
+          };
+        });
+        setEvents(eventsWithCorrectDateTime);
+  
       } else {
         setEvents([]);
         console.warn("Unexpected response format:", response);
@@ -40,14 +62,70 @@ const Home = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, [events]);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      const now = new Date();
+      const timeouts = []; 
   
+      events.forEach((event) => {
+        const eventDateTime = new Date(event.dateTime);
+        const timeToEvent = eventDateTime - now;
+
+        // console.log('timeToEvent:', timeToEvent);
+  
+        if (timeToEvent > 0) {
+          const timeoutId = setTimeout(() => {
+            showNotification(event);
+          }, timeToEvent);
+          timeouts.push(timeoutId); 
+        }
+      });
+  
+      return () => {
+        timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+      };
+    }
+  }, [events]); 
+  
+  const showNotification = (event) => {
+  if (Notification.permission === "granted") {
+
+    const notification = new Notification("Event Reminder", {
+      body: `${event.title} at ${new Date(event.dateTime).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      })}\nClick to snooze for 5 minutes`,
+      requireInteraction: true
+    });
+
+    notification.onclick = () => {
+
+      setTimeout(() => {
+        showNotification({
+          ...event,
+          title: `Snoozed: ${event.title}`
+        });
+      }, 5 * 60 * 1000);
+      notification.close(); 
+    };
+
+    notification.onclose = () => {
+      console.log("Notification dismissed");
+    };
+  }
+};
+
 
   const handleDateClick = (date) => {
     setCurrentViewDate(date);
-    const selectedDateStr = date.toISOString().split("T")[0];
+    const selectedDateStr = date.toLocaleDateString('en-CA');
     const eventsOnDate = events.filter(event => {
-      const eventDateStr = new Date(event.date).toISOString().split("T")[0];
+      const eventDateStr = new Date(event.date).toLocaleDateString('en-CA');
       return eventDateStr === selectedDateStr;
     });
     setEventsForSelectedDate(eventsOnDate);
@@ -61,9 +139,9 @@ const Home = () => {
 
   const tileContent = ({ date, view }) => {
     if (view === 'month') {
-      const tileDateStr = date.toISOString().split("T")[0];
+      const tileDateStr = date.toLocaleDateString('en-CA');
       const hasEvent = events.some(event => {
-        const eventDateStr = new Date(event.date).toISOString().split("T")[0];
+        const eventDateStr = new Date(event.date).toLocaleDateString('en-CA');
         return eventDateStr === tileDateStr;
       });
       
@@ -84,15 +162,15 @@ const Home = () => {
         throw new Error("Event ID is missing");
       }
       const eventId = eventDetails._id;  
-      const response = await axiosInstance.delete(
+      await axiosInstance.delete(
         `/server/event/delete/${eventId}`
       );  
       const updatedEvents = events.filter((event) => event._id !== eventId);
       setEvents(updatedEvents);
       if (currentViewDate) {
-        const selectedDateStr = currentViewDate.toISOString().split("T")[0];
+        const selectedDateStr = currentViewDate.toLocaleDateString('en-CA');
         const updatedEventsForDate = updatedEvents.filter((event) => {
-          const eventDateStr = new Date(event.date).toISOString().split("T")[0];
+          const eventDateStr = new Date(event.date).toLocaleDateString('en-CA');
           return eventDateStr === selectedDateStr;
         });
         setEventsForSelectedDate(updatedEventsForDate);
@@ -146,10 +224,11 @@ const Home = () => {
                     event={event} 
                     onDelete={deleteEvent}
                     onEdit={() => editEvent(event)}
+                    onSnooze={() => snoozeEvent(event._id)}
                     onEventUpdated={() => {
                       const updatedEventsForSelectedDate = events.filter(event => {
-                        const eventDateStr = new Date(event.date).toISOString().split("T")[0];
-                        return eventDateStr === currentViewDate.toISOString().split("T")[0];
+                        const eventDateStr = new Date(event.date).toLocaleDateString('en-CA');
+                        return eventDateStr === currentViewDate.toLocaleDateString('en-CA');
                       });
                       setEventsForSelectedDate(updatedEventsForSelectedDate);
                     }}
@@ -187,14 +266,19 @@ const Home = () => {
                 if (isEditing) {
                   updatedEvents = prevEvents.map((event) =>
                     event._id === newEvent._id ? newEvent : event
-                  );  
+                  );
                 } else {
                   updatedEvents = [...prevEvents, newEvent];
+                  const eventDateTime = new Date(newEvent.dateTime);
+                  const now = new Date();
+                  const timeToEvent = eventDateTime - now;
+            
+                  if (timeToEvent > 0) {
+                    setTimeout(() => {
+                      showNotification(newEvent);
+                    }, timeToEvent);
+                  }
                 }
-                setEventsForSelectedDate(updatedEvents.filter(event => {
-                  const eventDateStr = new Date(event.date).toISOString().split("T")[0];
-                  return eventDateStr === currentViewDate.toISOString().split("T")[0];
-                }));
                 return updatedEvents;
               });
               setShowForm(false);

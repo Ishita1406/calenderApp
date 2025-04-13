@@ -31,7 +31,7 @@ const EventForm = ({ selectedDate, onClose, onSuccess, existingEvent }) => {
 
     const eventData = new FormData();
     eventData.append("title", title);
-    eventData.append("date", selectedDate.toISOString().split("T")[0]);
+    eventData.append("date", selectedDate.toLocaleDateString('en-CA'));
     eventData.append("time", time);
     if (description) eventData.append("description", description);
     if (mediaUrl) eventData.append("mediaUrl", mediaUrl);
