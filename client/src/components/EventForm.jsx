@@ -74,13 +74,13 @@ const EventForm = ({ selectedDate, onClose, onSuccess, existingEvent }) => {
       <form className="event-form" onSubmit={handleSubmit}>
       <h2>{existingEvent ? `Edit Event` : `Create Event`} for {selectedDate.toDateString()}</h2>
 
-        <label>Title:</label>
+        <label>Title:<span className="required">*</span></label>
         <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} />
 
         <label>Description:</label>
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
 
-        <label>Time:</label>
+        <label>Time:<span className="required">*</span></label>
         <input type="time" required value={time} onChange={(e) => setTime(e.target.value)} />
 
         <label>Media (Image/Video):</label>

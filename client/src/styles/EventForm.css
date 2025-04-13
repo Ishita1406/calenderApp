@@ -1,6 +1,6 @@
 .event-form-container {
     background: white;
-    padding: 25px;
+    padding: 3rem;
     border-radius: 12px;
     width: 400px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -8,8 +8,16 @@
   
   .event-form h2 {
     margin-bottom: 20px;
-    font-size: 20px;
-    color: #4f46e5;
+    font-size: 1.7rem;
+    color: #8f00ff;
+  }
+
+  .required {
+    color: red;
+    margin-left: 3px;
+    font-size: x-small;
+    position: absolute;
+    bottom: 6px;
   }
   
   .event-form label {
@@ -17,6 +25,7 @@
     margin-top: 10px;
     margin-bottom: 5px;
     font-weight: 500;
+    position: relative;
   }
   
   .event-form input,
@@ -41,7 +50,7 @@
   .form-buttons button {
     padding: 8px 16px;
     border: none;
-    background-color: #4f46e5;
+    background-color: #8f00ff;
     color: white;
     border-radius: 6px;
     cursor: pointer;

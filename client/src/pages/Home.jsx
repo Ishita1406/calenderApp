@@ -5,6 +5,9 @@ import EventForm from "../components/EventForm";
 import "../styles/Home.css";
 import axiosInstance from "../utils/axiosInstance";
 import DisplayEvent from "../components/DisplayEvent";
+import Header from "../components/Header";
+import { useNavigate } from "react-router-dom";
+import { set } from "mongoose";
 
 const Home = () => {
   const [calendarDate, setCalendarDate] = useState(new Date());
@@ -16,6 +19,8 @@ const Home = () => {
   const [showEventsPopup, setShowEventsPopup] = useState(false);
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState([]);
   const [isEditing, setIsEditing] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const navigate = useNavigate();
 
   const getEventDateTime = (eventDate, eventTime) => {
     const [year, month, day] = eventDate.split("-").map(Number); 
@@ -60,12 +65,39 @@ const Home = () => {
     }
   };
 
+  const getUserInfo = async () => {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    const accessToken = localStorage.getItem('access_token');
+    
+    if (storedUserInfo) {
+      setUserInfo(JSON.parse(storedUserInfo));
+      return;
+    }
+
+    if (!accessToken) {
+      navigate('/login');
+      return;
+    }
+    try {
+      const response = await axiosInstance.get('server/auth/get');
+      if (response.data && response.data.user) {
+        setUserInfo(response.data.user);
+        localStorage.setItem('userInfo', JSON.stringify(response.data.user));
+      }
+    } catch (error) {
+      if (error.response.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+      }
+    }
+  };
+
   useEffect(() => {
     fetchEvents();
     if (Notification.permission !== "granted") {
       Notification.requestPermission();
     }
-  }, [events]);
+  }, []);
 
   useEffect(() => {
     if (events.length > 0) {
@@ -91,6 +123,11 @@ const Home = () => {
       };
     }
   }, [events]); 
+
+  useEffect(() => {
+    getUserInfo();
+    return () => {}
+  }, []);
   
   const showNotification = (event) => {
   if (Notification.permission === "granted") {
@@ -190,8 +227,10 @@ const Home = () => {
   }
   
   return (
+    <>
+    <Header userInfo={userInfo}/>
     <div className="calendar-fullscreen">
-      <h1 className="calendar-title">My Calendar</h1>
+
 
       <div className="calendar-container">
         <Calendar
@@ -283,11 +322,13 @@ const Home = () => {
               });
               setShowForm(false);
               setIsEditing(null);
+              setShowEventsPopup(false);
             }}
           />
         </div>
       )}
     </div>
+    </>
   );
 };
 

@@ -6,24 +6,19 @@
   flex-direction: column;
   align-items: center;
 }
-.calendar-title {
-  font-size: 1.875rem; 
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  color: #4f46e5; 
-}
 
 .calendar-container {
   background-color: white;
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
-  padding: 1rem;
+  padding: 2rem;
   width: 100%;
   max-width: 100rem;
+  margin-top: 1rem;
 } 
 
 .calendar-fullscreen {
-  height: 100vh;
+  height: 70vh;
   width: 100vw;
   display: flex;
   justify-content: center;
@@ -31,13 +26,6 @@
   flex-direction: column;
   padding: 20px;
   box-sizing: border-box;
-}
-
-.calendar-title {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 2rem;
-  color: #333;
 }
 
 .calendar-container {
@@ -109,7 +97,7 @@
 }
 
 .add-event-btn {
-  background-color: #4CAF50;
+  background-color: #8f00ff;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -119,7 +107,7 @@
 }
 
 .add-event-btn:hover {
-  background-color: #45a049;
+  background-color: #7200cc;
 }
 
 .form-popup-overlay {
@@ -137,8 +125,47 @@
 
 .react-calendar__tile {
   position: relative;
+  padding: 0.75rem 0;
+  font-size: 1.1rem;
   height: 80px;
 }
+
+/* Increase font size for the month navigation */
+.react-calendar__navigation button {
+  font-size: 1.5rem; /* adjust as needed */
+  font-weight: bold;
+}
+
+.react-calendar__month-view__weekdays {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.react-calendar__month-view__weekdays abbr {
+  text-decoration: none;
+  border: none;
+  cursor: default;
+}
+
+.react-calendar__month-view__days {
+  row-gap: 4px; 
+}
+
+
+.react-calendar__tile--active {
+  background-color: #d1b5f2 !important; 
+  color: white !important;
+}
+.react-calendar__tile--now:not(.react-calendar__tile--active) {
+  background-color: #e8f4e5 !important;
+  color: black !important;
+}
+
+.react-calendar__tile--now.react-calendar__tile--active {
+  background-color:  #d1b5f2 !important;
+  color: white !important;
+}
+
 
 @media (max-width: 768px) {
   .fullscreen-calendar {
@@ -146,7 +173,7 @@
   }
   
   .react-calendar__tile {
-    height: 60px;
+    height: 50px;
     padding: 5px;
   }
 }

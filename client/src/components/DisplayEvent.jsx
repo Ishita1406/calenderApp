@@ -7,7 +7,7 @@ const DisplayEvent = ({ event, onDelete, onEdit }) => {
     <div className="event-card">
       <div className="event-details">
         <div className="event-content">
-          <h3>{event.title} {event.date}</h3>
+          <h3>{event.title}</h3>
           <p>At {event.time}</p>
           {event.description && <p>{event.description}</p>}
         </div>
