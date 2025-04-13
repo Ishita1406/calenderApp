@@ -28,7 +28,6 @@ const Home = () => {
   
     const eventDateTime = new Date(year, month - 1, day, hour, minute, 0);
   
-    console.log("Parsed Date:", eventDateTime);
   
     if (isNaN(eventDateTime.getTime())) {
       console.error("Invalid event date-time with values:", { year, month, day, hour, minute });
@@ -97,7 +96,7 @@ const Home = () => {
     if (Notification.permission !== "granted") {
       Notification.requestPermission();
     }
-  }, []);
+  }, [events]);
 
   useEffect(() => {
     if (events.length > 0) {
